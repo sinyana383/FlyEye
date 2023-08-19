@@ -8,6 +8,7 @@ public class Eye : MonoBehaviour
 {
     public Rigidbody2D myRb;
     public float flapStrength;
+    private float curFalpStrength;
     
     public LogicManager logic;
     public VineSpawner vineSpawner;
@@ -19,6 +20,7 @@ public class Eye : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        curFalpStrength = flapStrength;
         vineSpawner.enabled = false;
         myRb.constraints |= RigidbodyConstraints2D.FreezePositionY;
         logic = GameObject.FindGameObjectWithTag("Logic").GetComponent<LogicManager>();
@@ -28,7 +30,8 @@ public class Eye : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        curFalpStrength = flapStrength * Math.Abs(Camera.main.orthographicSize - transform.position.y)/Camera.main.orthographicSize;
+        curFalpStrength = Math.Clamp(curFalpStrength, 0, 6);
     }
     
     public void Flap(InputAction.CallbackContext context)
@@ -37,11 +40,16 @@ public class Eye : MonoBehaviour
         {
             vineSpawner.enabled = true;
             myRb.constraints &= ~RigidbodyConstraints2D.FreezePositionY;
-            myRb.velocity = Vector2.up * flapStrength;
+            myRb.velocity = Vector2.up * curFalpStrength;
         }
     }
 
     private void OnCollisionEnter2D(Collision2D other)
+    {
+        Death();
+    }
+
+    public void Death()
     {
         hitSound.Play();
         
